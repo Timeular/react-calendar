@@ -160,7 +160,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function Calendar(props, context) {
 	    _classCallCheck(this, Calendar);
 
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Calendar).call(this, props, context));
+	    return _possibleConstructorReturn(this, (Calendar.__proto__ || Object.getPrototypeOf(Calendar)).call(this, props, context));
 	  }
 
 	  _createClass(Calendar, [{
@@ -386,8 +386,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, []);
 	};
 
-	// const getModsWithSingleDate = (mods) =>
-	// mods.filter((mod) => !mod.startDate && mod.date)
+	var getModsWithSingleDate = function getModsWithSingleDate(mods) {
+	  return mods.filter(function (mod) {
+	    return !mod.startDate && mod.date;
+	  });
+	};
 
 	var getModsWithoutDate = function getModsWithoutDate(mods) {
 	  return mods.filter(function (mod) {
@@ -396,7 +399,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	var getModsByCompType = exports.getModsByCompType = function getModsByCompType(componentType, mods) {
-	  if (!mods) {
+	  if (!Array.isArray(mods)) {
 	    return [];
 	  }
 
@@ -465,6 +468,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var clsPrefix = 'rc-Month';
 
 	var renderWeekHeader = function renderWeekHeader(props) {
+	  if (!props.weekdayNames) {
+	    return null;
+	  }
 	  return _react2.default.createElement(
 	    'div',
 	    { className: clsPrefix + '-weekdays' },
@@ -495,14 +501,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	var Month = function Month(props) {
-	  var date = props.date;
-	  var weekNumbers = props.weekNumbers;
+	  var date = props.date,
+	      weekNumbers = props.weekNumbers,
+	      renderDay = props.renderDay,
+	      renderWeekNumber = props.renderWeekNumber;
 
 	  var edges = (0, _dateUtils.monthEdges)(date);
 
-	  var mods = props.mods;
-	  var day = props.day;
-	  var week = props.week;
+	  var mods = props.mods,
+	      day = props.day,
+	      week = props.week;
 
 	  var clsMods = void 0,
 	      events = void 0;
@@ -544,8 +552,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        date: wDate,
 	        edges: edges,
 	        weekNumbers: weekNumbers,
+	        renderWeekNumber: renderWeekNumber,
 	        mods: fWeekMods,
-	        day: fDayMods });
+	        day: fDayMods,
+	        renderDay: renderDay });
 	    })
 	  );
 	};
@@ -555,7 +565,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  monthNameFormat: _react.PropTypes.string,
 	  weekdayNames: _react.PropTypes.bool,
 	  weekdayFormat: _react.PropTypes.string,
-	  mod: _react.PropTypes.object
+	  mod: _react.PropTypes.object,
+	  renderDay: _react.PropTypes.func,
+	  renderWeekNumber: _react.PropTypes.func
 	};
 
 	Month.defaultProps = {
@@ -673,11 +685,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	var clsPrefix = 'rc-Week';
 
 	var makeWeekNumber = function makeWeekNumber(props) {
-	  if (!props.weekNumbers) {
+	  if (!props.weekNumbers && !props.renderWeekNumber) {
 	    return null;
 	  }
 
-	  return _react2.default.createElement(
+	  return props.renderWeekNumber ? props.renderWeekNumber({ date: props.date }) : _react2.default.createElement(
 	    'div',
 	    { key: 'weekNumber', className: (0, _classnames2.default)(clsPrefix + '-number') },
 	    props.date.format(props.weekNumberFormat)
@@ -703,10 +715,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	var Week = function Week(props) {
-	  var mods = props.mods;
-	  var date = props.date;
-	  var clsMods = void 0;var events = void 0;var week = void 0;var day = props.day;
-
+	  var mods = props.mods,
+	      date = props.date,
+	      renderDay = props.renderDay;
+	  var clsMods = void 0,
+	      events = void 0,
+	      week = void 0,
+	      day = props.day;
 
 	  week = (0, _util.getModsByCompType)('week', mods);
 	  var modifiers = (0, _util.getMods)(week, date, clsPrefix, 'week');
@@ -719,6 +734,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (!props.day) {
 	    day = (0, _util.getModsByCompType)('day', mods);
 	  }
+
+	  var Day = renderDay || Day;
 
 	  return _react2.default.createElement(
 	    'div',
@@ -736,8 +753,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return edge.isSame(date, 'month', 'week', 'year');
 	          }));
 	        }
-
-	        return _react2.default.createElement(_Day2.default, { outside: !!outside, key: 'day-' + i, date: date, mods: day });
+	        return _react2.default.createElement(Day, { outside: !!outside, key: 'day-' + i, date: date, mods: day });
 	      })
 	    )
 	  );
@@ -747,7 +763,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  weekHeader: _react.PropTypes.bool,
 	  weekNumbers: _react.PropTypes.bool,
 	  weekNumberFormat: _react.PropTypes.string,
-	  weekdayFormat: _react.PropTypes.string
+	  weekdayFormat: _react.PropTypes.string,
+	  renderDay: _react.PropTypes.func,
+	  renderWeekNumber: _react.PropTypes.func
 	};
 
 	Week.defaultProps = {
@@ -811,9 +829,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var Day = function Day(props) {
 	  var clsPrefix = 'rc-Day';
-	  var date = props.date;
-	  var mods = props.mods;
-	  var outside = props.outside;
+	  var date = props.date,
+	      mods = props.mods,
+	      outside = props.outside;
 
 	  var modifiers = (0, _util.getMods)(mods, date, clsPrefix, 'day');
 

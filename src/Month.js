@@ -9,11 +9,10 @@ import Day from './Day';
 const clsPrefix = 'rc-Month';
 
 const renderWeekHeader = (props) => {
+  if (!props.weekdayNames) {
+    return null;
+  }
   return (
-    if (!props.weekdayNames) {
-      return null;
-    }
-    
     <div className={`${clsPrefix}-weekdays`}>
       {
         daysOfWeek(props.date).map((weekday, i) =>
@@ -43,7 +42,7 @@ const renderHeader = (props) => {
 };
 
 const Month = (props) => {
-  const { date, weekNumbers } = props;
+  const { date, weekNumbers, renderDay, renderWeekNumber } = props;
   const edges = monthEdges(date);
 
   let { mods, day, week } = props;
@@ -81,8 +80,10 @@ const Month = (props) => {
                 date={ wDate }
                 edges={ edges }
                 weekNumbers={ weekNumbers }
+                renderWeekNumber={ renderWeekNumber }
                 mods={ fWeekMods }
-                day={ fDayMods } />
+                day={ fDayMods }
+                renderDay={ renderDay } />
         )
       }
     </div>
@@ -94,7 +95,9 @@ Month.propTypes = {
   monthNameFormat: PropTypes.string,
   weekdayNames: PropTypes.bool,
   weekdayFormat: PropTypes.string,
-  mod: PropTypes.object
+  mod: PropTypes.object,
+  renderDay: PropTypes.func,
+  renderWeekNumber: PropTypes.func,
 };
 
 Month.defaultProps = {

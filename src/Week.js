@@ -8,11 +8,13 @@ import Day from './Day';
 const clsPrefix = 'rc-Week';
 
 const makeWeekNumber = (props) => {
-  if (!props.weekNumbers) {
+  if (!props.weekNumbers && !props.renderWeekNumber) {
     return null;
   }
 
-  return (
+  return props.renderWeekNumber
+  ? props.renderWeekNumber({date: props.date})
+  : (
     <div key="weekNumber" className={ classnames(`${clsPrefix}-number`) }>
       { props.date.format(props.weekNumberFormat) }
     </div>
@@ -38,7 +40,7 @@ const renderWeekHeader = (props) => {
 };
 
 const Week = (props) => {
-  const { mods, date } = props;
+  const { mods, date, renderDay } = props;
   let clsMods, events, week, { day } = props;
 
   week = getModsByCompType('week', mods);
@@ -53,6 +55,8 @@ const Week = (props) => {
     day = getModsByCompType('day', mods);
   }
 
+  const Day = renderDay || Day
+
   return (
     <div key="days" className={ classnames(clsPrefix, clsMods) } { ...events }>
       { renderWeekHeader(props) }
@@ -65,7 +69,6 @@ const Week = (props) => {
             if (props.edges) {
               outside = Boolean(props.edges.find((edge, j) => edge.isSame(date, 'month', 'week', 'year')));
             }
-
             return <Day outside={ !!outside } key={ `day-${i}` } date={ date } mods={ day } />
           })
         }
@@ -79,6 +82,8 @@ Week.propTypes = {
   weekNumbers: PropTypes.bool,
   weekNumberFormat: PropTypes.string,
   weekdayFormat: PropTypes.string,
+  renderDay: PropTypes.func,
+  renderWeekNumber: PropTypes.func,
 };
 
 Week.defaultProps = {
